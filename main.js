@@ -66,4 +66,4 @@ app.post('/', async(req, res) => {
     console.log('files deleted')
 });
 
-app.listen(process.env.PORT || 14256, () => console.log('listening on port ' + (process.env.PORT || 14256)));
+app.listen(process.env.PORT || 1919, () => console.log('listening on port ' + (process.env.PORT || 1919)));
