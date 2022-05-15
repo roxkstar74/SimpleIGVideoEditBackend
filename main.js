@@ -46,7 +46,8 @@ app.post('/', async(req, res) => {
                 console.log('Processing finished !');
                 resolve('downloads/vertical.mp4');
             })
-            .videoFilter("pad=w=max(ih*4/5\\,iw):h=ih:x=(iw-ow)/2:y=(ih-oh/2):color=black,pad=w=iw:h=max(iw*9/16\\,ih):x=(iw-ow)/2:y=(ih-oh/2):color=black")
+            // .videoFilter("pad=w=max(ih*4/5\\,iw):h=ih:x=(iw-ow)/2:y=(ih-oh/2):color=black,pad=w=iw:h=max(iw*9/16\\,ih):x=(iw-ow)/2:y=(ih-oh/2):color=black")
+            .videoFilter('scale=1536x1920:flags=lanczos')
             .save(editedFileName);
         console.log(internalCom._getArguments());
     });
