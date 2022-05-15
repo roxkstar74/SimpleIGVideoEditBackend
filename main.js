@@ -16,19 +16,33 @@ import axios from 'axios';
 import FormData from 'form-data';
 import util from 'util';
 import cors from 'cors';
+import got from 'got';
 
 app.use(cors());
 app.use(fileupload());
 
 app.post('/', async(req, res) => {
     // get file and store it
-    let igRawVideo = req.files.video;
-    console.log(igRawVideo);
+    // let igRawVideo = req.files.video;
+    // console.log(igRawVideo);
 
+    let fileURL = req.query.fileURL;
+    let fileStream = got.stream(fileURL);
     const randomFileName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + '.mp4';
+
+    //wait for filestream to end
+    console.log('streaming')
+    await new Promise((resolve, reject) => {
+        let file = fs.createWriteStream('./' + randomFileName);
+        fileStream.pipe(file);
+        file.on('finish', () => {
+            resolve();
+        });
+    });
+
     const editedFileName = `./${randomFileName}-edited.mp4`;
     //create file with fs
-    let igRawVideoLocalFile = fs.writeFileSync(randomFileName, igRawVideo.data);
+    // let igRawVideoLocalFile = fs.writeFileSync(randomFileName, igRawVideo.data);
     // edit file with ffmpeg
     // ffmpeg -i video.mp4 -vf "pad=w=max(ih*4/5\,iw):h=ih:x=(iw-ow)/2:y=(ih-oh/2):color=black,pad=w=iw:h=max(iw*9/16\,ih):x=(iw-ow)/2:y=(ih-oh/2):color=black" video2.mp4
     console.log('Starting to edit video');
