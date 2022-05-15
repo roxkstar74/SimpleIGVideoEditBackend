@@ -17,9 +17,26 @@ import FormData from 'form-data';
 import util from 'util';
 import cors from 'cors';
 import got from 'got';
+import dotenv from 'dotenv';
+dotenv.config();
 
 app.use(cors());
 app.use(fileupload());
+
+const fileioUpload = (formData) => {
+    let tempFormData = formData;
+    //@ts-ignore
+    tempFormData.append('maxDownloads', '10');
+    let today = new Date();
+    let tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+    tempFormData.append('expires', tomorrow.toISOString());
+    tempFormData.append('autoDelete', 'true');
+    return axios.post('https://file.io', tempFormData, {
+        headers: {
+            'Authorization': 'Bearer ' + process.env.FILE_IO_KEY
+        }
+    });
+}
 
 app.post('/', async(req, res) => {
     // get file and store it
@@ -73,9 +90,7 @@ app.post('/', async(req, res) => {
     form.append('file', fs.createReadStream(editedFileName), {
         filename: 'edited.mp4'
     });
-    let fileIOResponse = await axios.post('https://file.io', form, {
-        headers: form.getHeaders()
-    });
+    let fileIOResponse = await fileioUpload(form);
     // return file.io url
     res.status(200).send(fileIOResponse.data.link);
 
