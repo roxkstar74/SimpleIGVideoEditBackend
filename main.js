@@ -33,8 +33,8 @@ app.post('/', async(req, res) => {
     // ffmpeg -i video.mp4 -vf "pad=w=max(ih*4/5\,iw):h=ih:x=(iw-ow)/2:y=(ih-oh/2):color=black,pad=w=iw:h=max(iw*9/16\,ih):x=(iw-ow)/2:y=(ih-oh/2):color=black" video2.mp4
     console.log('Starting to edit video');
     var command = new Promise((resolve, reject) => {
-        ffmpeg('./' + randomFileName)
-            // .outputOptions(['-c:v mp4'])
+        let internalCom = ffmpeg('./' + randomFileName)
+            .outputOptions('-movflags faststart')
             .on('error', function(err, stdout, stderr) {
                 console.log('stdout:', stdout);
                 console.log('stderr:', stderr);
@@ -48,6 +48,7 @@ app.post('/', async(req, res) => {
             })
             .videoFilter("pad=w=max(ih*4/5\\,iw):h=ih:x=(iw-ow)/2:y=(ih-oh/2):color=black,pad=w=iw:h=max(iw*9/16\\,ih):x=(iw-ow)/2:y=(ih-oh/2):color=black")
             .save(editedFileName);
+        console.log(internalCom._getArguments());
     });
 
     await command
@@ -66,7 +67,7 @@ app.post('/', async(req, res) => {
     // delete local files
     fs.unlinkSync(editedFileName);
     fs.unlinkSync('./' + randomFileName);
-    console.log('files deleted')
+    console.log('files deleted: ', editedFileName, randomFileName);
 });
 
 app.listen(process.env.PORT || 1919, () => console.log('listening on port ' + (process.env.PORT || 1919)));
