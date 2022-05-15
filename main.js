@@ -28,7 +28,7 @@ app.post('/', async(req, res) => {
     const randomFileName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + '.mp4';
     const editedFileName = `./${randomFileName}-edited.mp4`;
     //create file with fs
-    // let igRawVideoLocalFile = fs.writeFileSync(randomFileName, igRawVideo.data);
+    let igRawVideoLocalFile = fs.writeFileSync(randomFileName, igRawVideo.data);
     // edit file with ffmpeg
     // ffmpeg -i video.mp4 -vf "pad=w=max(ih*4/5\,iw):h=ih:x=(iw-ow)/2:y=(ih-oh/2):color=black,pad=w=iw:h=max(iw*9/16\,ih):x=(iw-ow)/2:y=(ih-oh/2):color=black" video2.mp4
     console.log('Starting to edit video');
