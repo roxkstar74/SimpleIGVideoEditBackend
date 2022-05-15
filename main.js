@@ -34,6 +34,7 @@ app.post('/', async(req, res) => {
     console.log('Starting to edit video');
     var command = new Promise((resolve, reject) => {
         ffmpeg('./' + randomFileName)
+            // .outputOptions(['-c:v mp4'])
             .on('error', function(err, stdout, stderr) {
                 console.log('stdout:', stdout);
                 console.log('stderr:', stderr);
@@ -53,7 +54,9 @@ app.post('/', async(req, res) => {
 
     // create form data and post to https://file.io with axios
     let form = new FormData();
-    form.append('file', fs.createReadStream(editedFileName));
+    form.append('file', fs.createReadStream(editedFileName), {
+        filename: 'edited.mp4'
+    });
     let fileIOResponse = await axios.post('https://file.io', form, {
         headers: form.getHeaders()
     });
