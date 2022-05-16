@@ -23,6 +23,8 @@ dotenv.config();
 app.use(cors());
 app.use(fileupload());
 
+const currentJobStatus = {};
+
 const fileioUpload = (formData) => {
     let tempFormData = formData;
     //@ts-ignore
@@ -34,7 +36,9 @@ const fileioUpload = (formData) => {
     return axios.post('https://file.io', tempFormData, {
         headers: {
             'Authorization': 'Bearer ' + process.env.FILE_IO_KEY
-        }
+        },
+        'maxContentLength': Infinity,
+        'maxBodyLength': Infinity
     });
 }
 
@@ -47,6 +51,8 @@ app.post('/', async(req, res) => {
     let fileStream = got.stream(fileURL);
     const randomFileName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + '.mp4';
 
+    currentJobStatus[randomFileName] = {status: 'processing'};
+    res.status(200).send({id: randomFileName, ...currentJobStatus[randomFileName]});
     //wait for filestream to end
     console.log('streaming')
     await new Promise((resolve, reject) => {
@@ -91,13 +97,21 @@ app.post('/', async(req, res) => {
         filename: 'edited.mp4'
     });
     let fileIOResponse = await fileioUpload(form);
+    currentJobStatus[randomFileName] = {
+        fileURL: fileIOResponse.data.link,
+        status: 'done'
+    };
     // return file.io url
-    res.status(200).send(fileIOResponse.data.link);
 
     // delete local files
     fs.unlinkSync(editedFileName);
     fs.unlinkSync('./' + randomFileName);
     console.log('files deleted: ', editedFileName, randomFileName);
+});
+
+app.get('/status', (req, res) => {
+    const jobId = req.query.id;
+    res.status(200).send(currentJobStatus[jobId]);
 });
 
 app.listen(process.env.PORT || 1919, () => console.log('listening on port ' + (process.env.PORT || 1919)));
