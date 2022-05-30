@@ -18,6 +18,7 @@ import util from 'util';
 import cors from 'cors';
 import got from 'got';
 import dotenv from 'dotenv';
+import {unzip} from './unzip.js';
 dotenv.config();
 
 app.use(cors());
@@ -112,6 +113,38 @@ app.post('/', async(req, res) => {
 app.get('/status', (req, res) => {
     const jobId = req.query.id;
     res.status(200).send(currentJobStatus[jobId]);
+});
+
+app.post('/upload', async(req, res) => {
+    let startTime = new Date();
+    console.log('zip file received:');
+    let zipFile = req.files.zip;
+    fs.writeFileSync('./' + zipFile.name, zipFile.data);
+    console.log('file saved');
+    const storedCsvLocation = './Totals.csv';
+    await unzip('./' + zipFile.name, 'Totals.csv', storedCsvLocation);
+    // read back in csv
+    let csv = fs.readFileSync(storedCsvLocation, 'utf8');
+    let csvLines = csv.split('\n');
+    let csvHeaders = csvLines[0].split(',');
+    let csvData = csvLines.slice(1);
+    let csvDataArray = csvData.map(line => {
+        let lineArray = line.split(',');
+        let obj = {};
+        for (let i = 0; i < csvHeaders.length; i++) {
+            if(lineArray[i] == "") {
+                return null;
+            }
+            obj[csvHeaders[i]] = lineArray[i];
+        }
+        return obj;
+    }).filter(line => line != null);
+    console.log('csv data: ', csvDataArray);
+    res.status(200).send(csvDataArray);
+    let endTime = new Date();
+    console.log('zip file response sent in :' + (endTime - startTime) + 'ms');
+    fs.unlinkSync('./' + zipFile.name);
+    fs.unlinkSync(storedCsvLocation);
 });
 
 app.listen(process.env.PORT || 1919, () => console.log('listening on port ' + (process.env.PORT || 1919)));
