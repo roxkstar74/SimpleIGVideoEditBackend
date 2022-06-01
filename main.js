@@ -121,8 +121,9 @@ app.post('/upload', async(req, res) => {
     let zipFile = req.files.zip;
     fs.writeFileSync('./' + zipFile.name, zipFile.data);
     console.log('file saved');
-    const storedCsvLocation = './Totals.csv';
-    await unzip('./' + zipFile.name, 'Totals.csv', storedCsvLocation);
+    const NEWFILENAME = 'Table data.csv';
+    const storedCsvLocation = './' + NEWFILENAME;
+    await unzip('./' + zipFile.name, NEWFILENAME, storedCsvLocation);
     // read back in csv
     let csv = fs.readFileSync(storedCsvLocation, 'utf8');
     let csvLines = csv.split('\n');
@@ -140,6 +141,7 @@ app.post('/upload', async(req, res) => {
         return obj;
     }).filter(line => line != null);
     console.log('csv data: ', csvDataArray);
+    csvDataArray = csvDataArray.filter(line => line.Date != 'Total');
     res.status(200).send(csvDataArray);
     let endTime = new Date();
     console.log('zip file response sent in :' + (endTime - startTime) + 'ms');
