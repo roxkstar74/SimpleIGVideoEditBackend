@@ -130,13 +130,16 @@ app.post('/upload', async(req, res) => {
     let csvHeaders = csvLines[0].split(',');
     let csvData = csvLines.slice(1);
     let csvDataArray = csvData.map(line => {
+        if(line === '') return null;
         let lineArray = line.split(',');
         let obj = {};
         for (let i = 0; i < csvHeaders.length; i++) {
-            if(lineArray[i] == "") {
-                return null;
+            if(csvHeaders[i] === 'Average view duration') {
+                obj[csvHeaders[i]] = lineArray[i] || "0:00:00";
             }
-            obj[csvHeaders[i]] = lineArray[i];
+            else {
+                obj[csvHeaders[i]] = lineArray[i] || "0";
+            }
         }
         return obj;
     }).filter(line => line != null);
